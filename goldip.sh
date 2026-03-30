@@ -2,9 +2,11 @@
 
 BACKHAUL_BIN="/usr/local/bin/backhaul"
 BACKHAUL_ARCHIVE="/tmp/backhaul_linux_amd64.tar.gz"
-BACKHAUL_URL="https://github.com/Musixal/Backhaul/releases/download/v0.6.5/backhaul_linux_amd64.tar.gz"
+BACKHAUL_URL_PRIMARY="https://goldip.me/backhaul_linux_amd64.tar.gz"
+BACKHAUL_URL_BACKUP="https://github.com/Musixal/Backhaul/releases/download/v0.6.5/backhaul_linux_amd64.tar.gz"
 SNIFFER_LOG="/root/backhaul.json"
 TUNNEL_DB="/root/.goldip_tunnels.json"
+MONITOR_PID_FILE="/var/run/goldip_monitor.pid"
 
 declare -A COLORS=(
     [RESET]='\033[0m'
@@ -14,8 +16,19 @@ declare -A COLORS=(
     [CYAN]='\033[38;5;51m'
     [YELLOW]='\033[38;5;226m'
     [ORANGE]='\033[38;5;208m'
+    [NEWPINK]='\033[38;2;243;67;149m'
+    [NEWORANGE]='\033[38;2;227;106;113m'
     [BLUE]='\033[38;5;33m'
     [OLIVE]='\033[38;5;142m'
+    [PURPLE]='\033[38;5;93m'
+    [MAGENTA]='\033[38;5;201m'
+    [WHITE]='\033[97m'
+    [BG_GREEN]='\033[48;5;28m'
+    [BG_RED]='\033[48;5;196m'
+    [BG_YELLOW]='\033[48;5;220m'
+    [BG_BLUE]='\033[48;5;27m'
+    [BG_CYAN]='\033[48;5;30m'
+    [BG_ORANGE]='\033[48;5;208m'
 )
 
 print_color() {
@@ -24,27 +37,34 @@ print_color() {
     echo -e "${COLORS[$color]}${text}${COLORS[RESET]}"
 }
 
+print_box() {
+    local bg_color="$1"
+    local text_color="$2"
+    local text="$3"
+    echo -e "${COLORS[$bg_color]}${COLORS[$text_color]} ${text} ${COLORS[RESET]}"
+}
+
 clear_screen() {
     printf "\033c"
 }
 
 print_logo() {
     echo ""
-    echo -e "${COLORS[PINK]}   ██████╗ ${COLORS[CYAN]} ██████╗ ${COLORS[YELLOW]}██╗     ${COLORS[ORANGE]}██████╗ ${COLORS[BLUE]}██╗${COLORS[OLIVE]}██████╗ ${COLORS[RESET]}"
-    echo -e "${COLORS[PINK]}  ██╔════╝ ${COLORS[CYAN]}██╔═══██╗${COLORS[YELLOW]}██║     ${COLORS[ORANGE]}██╔══██╗${COLORS[BLUE]}██║${COLORS[OLIVE]}██╔══██╗${COLORS[RESET]}"
-    echo -e "${COLORS[PINK]}  ██║  ███╗${COLORS[CYAN]}██║   ██║${COLORS[YELLOW]}██║     ${COLORS[ORANGE]}██║  ██║${COLORS[BLUE]}██║${COLORS[OLIVE]}██████╔╝${COLORS[RESET]}"
-    echo -e "${COLORS[PINK]}  ██║   ██║${COLORS[CYAN]}██║   ██║${COLORS[YELLOW]}██║     ${COLORS[ORANGE]}██║  ██║${COLORS[BLUE]}██║${COLORS[OLIVE]}██╔═══╝ ${COLORS[RESET]}"
-    echo -e "${COLORS[PINK]}  ╚██████╔╝${COLORS[CYAN]}╚██████╔╝${COLORS[YELLOW]}███████╗${COLORS[ORANGE]}██████╔╝${COLORS[BLUE]}██║${COLORS[OLIVE]}██║     ${COLORS[RESET]}"
-    echo -e "${COLORS[PINK]}   ╚═════╝ ${COLORS[CYAN]} ╚═════╝ ${COLORS[YELLOW]}╚══════╝${COLORS[ORANGE]}╚═════╝ ${COLORS[BLUE]}╚═╝${COLORS[OLIVE]}╚═╝     ${COLORS[RESET]}"
+    echo -e "${COLORS[PINK]}   ██████╗ ${COLORS[CYAN]} ██████╗ ${COLORS[YELLOW]}██╗     ${COLORS[PURPLE]}██████╗${COLORS[BLUE]}██╗${COLORS[MAGENTA]}██████╗ ${COLORS[RESET]}"
+    echo -e "${COLORS[PINK]}  ██╔════╝ ${COLORS[CYAN]}██╔═══██╗${COLORS[YELLOW]}██║     ${COLORS[PURPLE]}██╔══██╗${COLORS[BLUE]}██║${COLORS[MAGENTA]}██╔══██╗${COLORS[RESET]}"
+    echo -e "${COLORS[PINK]}  ██║  ███╗${COLORS[CYAN]}██║   ██║${COLORS[YELLOW]}██║     ${COLORS[PURPLE]}██║  ██║${COLORS[BLUE]}██║${COLORS[MAGENTA]}██████╔╝${COLORS[RESET]}"
+    echo -e "${COLORS[PINK]}  ██║   ██║${COLORS[CYAN]}██║   ██║${COLORS[YELLOW]}██║     ${COLORS[PURPLE]}██║  ██║${COLORS[BLUE]}██║${COLORS[MAGENTA]}██╔═══╝ ${COLORS[RESET]}"
+    echo -e "${COLORS[PINK]}  ╚██████╔╝${COLORS[CYAN]}╚██████╔╝${COLORS[YELLOW]}███████╗${COLORS[PURPLE]}██████╔╝${COLORS[BLUE]}██║${COLORS[MAGENTA]}██║     ${COLORS[RESET]}"
+    echo -e "${COLORS[PINK]}   ╚═════╝ ${COLORS[CYAN]} ╚═════╝ ${COLORS[YELLOW]}╚══════╝${COLORS[PURPLE]}╚═════╝ ${COLORS[BLUE]}╚═╝${COLORS[MAGENTA]}╚═╝     ${COLORS[RESET]}"
     echo ""
     print_color "CYAN" "  B A C K H A U L   T U N N E L   M A N A G E R"
-    print_color "ORANGE" "  ═══════════════════════════════════════════════"
+    print_color "NEWORANGE" "  ═══════════════════════════════════════════════"
     echo ""
     
     if [[ -f "$BACKHAUL_BIN" ]]; then
-        print_color "GREEN" "  ✓ Backhaul Installed"
+        print_box "BG_GREEN" "WHITE" "✓ Backhaul Installed"
     else
-        print_color "RED" "  ✗ Backhaul Not Installed"
+        print_box "BG_RED" "WHITE" "✗ Backhaul Not Installed"
     fi
     echo ""
 }
@@ -56,14 +76,14 @@ print_header() {
 
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        print_color "RED" "✗ This script must be run as root"
+        print_box "BG_RED" "WHITE" "✗ This script must be run as root"
         exit 1
     fi
 }
 
 press_enter() {
     echo ""
-    print_color "ORANGE" "Press Enter to continue..."
+    print_color "NEWORANGE" "Press Enter to continue..."
     read -r
 }
 
@@ -109,6 +129,64 @@ delete_tunnel_info() {
     mv "$temp_file" "$TUNNEL_DB"
 }
 
+check_vpn_port_conflict() {
+    local new_ports="$1"
+    local current_service="$2"
+    
+    IFS=',' read -ra new_ports_array <<< "$new_ports"
+    
+    for new_port in "${new_ports_array[@]}"; do
+        new_port=$(echo "$new_port" | xargs | tr -d '"')
+        
+        if check_port_in_use "$new_port"; then
+            local service_info=$(ss -tulnp 2>/dev/null | grep ":${new_port} " | head -1)
+            local process_info=$(echo "$service_info" | awk '{print $NF}' | sed 's/users:((//' | sed 's/))//' | cut -d',' -f2 | tr -d '"')
+            
+            if [[ -z "$process_info" ]]; then
+                process_info=$(lsof -i ":${new_port}" 2>/dev/null | tail -1 | awk '{print $1}')
+            fi
+            
+            if [[ -z "$process_info" ]]; then
+                process_info="Unknown Service"
+            fi
+            
+            echo "system:$new_port:$process_info"
+            return 1
+        fi
+    done
+    
+    for config_file in /root/backhaul-*.toml; do
+        if [[ -f "$config_file" ]]; then
+            local service_name=$(basename "$config_file" .toml)
+            
+            if [[ "$service_name" == "$current_service" ]]; then
+                continue
+            fi
+            
+            local existing_ports=$(grep "^ports = " "$config_file" 2>/dev/null | sed 's/ports = \[//g' | sed 's/\]//g' | tr -d '"' | tr -d ' ')
+            
+            if [[ -n "$existing_ports" ]]; then
+                IFS=',' read -ra existing_ports_array <<< "$existing_ports"
+                
+                for new_port in "${new_ports_array[@]}"; do
+                    new_port=$(echo "$new_port" | xargs | tr -d '"')
+                    
+                    for existing_port in "${existing_ports_array[@]}"; do
+                        existing_port=$(echo "$existing_port" | xargs)
+                        
+                        if [[ "$new_port" == "$existing_port" ]]; then
+                            echo "goldip:$existing_port:$service_name"
+                            return 1
+                        fi
+                    done
+                done
+            fi
+        fi
+    done
+    
+    return 0
+}
+
 check_port_in_use() {
     local port="$1"
     if ss -tuln | grep -q ":${port} "; then
@@ -143,10 +221,15 @@ generate_token() {
 
 get_next_web_port() {
     local start_port=2060
-    while check_port_in_use "$start_port"; do
+    local used_ports=$(grep -h "web_port" /root/*.toml 2>/dev/null | awk '{print $3}' | sort -n | uniq)
+    
+    while true; do
+        if ! echo "$used_ports" | grep -qx "$start_port"; then
+            echo "$start_port"
+            return
+        fi
         ((start_port++))
     done
-    echo "$start_port"
 }
 
 list_tunnels() {
@@ -160,16 +243,117 @@ list_tunnels() {
     echo "${tunnels[@]}"
 }
 
+format_bytes() {
+    local bytes=$1
+    if [[ $bytes -lt 1024 ]]; then
+        echo "${bytes}B/s"
+    elif [[ $bytes -lt 1048576 ]]; then
+        echo "$(awk "BEGIN {printf \"%.2f\", $bytes/1024}")KB/s"
+    else
+        echo "$(awk "BEGIN {printf \"%.2f\", $bytes/1048576}")MB/s"
+    fi
+}
+
+get_tunnel_traffic() {
+    local service_name="$1"
+    local config_file="/root/${service_name}.toml"
+    
+    if [[ ! -f "$config_file" ]]; then
+        echo "0|0"
+        return
+    fi
+    
+    local web_port=$(grep "^web_port" "$config_file" 2>/dev/null | awk '{print $3}')
+    
+    if [[ -z "$web_port" ]]; then
+        echo "0|0"
+        return
+    fi
+    
+    local stats=$(curl -s "http://127.0.0.1:${web_port}/stats" 2>/dev/null)
+    
+    if [[ -z "$stats" ]]; then
+        echo "0|0"
+        return
+    fi
+    
+    local rx=$(echo "$stats" | jq -r '.rx_rate // 0' 2>/dev/null || echo "0")
+    local tx=$(echo "$stats" | jq -r '.tx_rate // 0' 2>/dev/null || echo "0")
+    
+    echo "$rx|$tx"
+}
+
+check_tunnel_connection() {
+    local service_name="$1"
+    
+    if ! systemctl is-active --quiet "$service_name"; then
+        echo "inactive"
+        return
+    fi
+    
+    local traffic=$(get_tunnel_traffic "$service_name")
+    local rx=$(echo "$traffic" | cut -d'|' -f1)
+    local tx=$(echo "$traffic" | cut -d'|' -f2)
+    
+    if [[ "$rx" == "0" ]] && [[ "$tx" == "0" ]]; then
+        local config_file="/root/${service_name}.toml"
+        if grep -q "\[server\]" "$config_file" 2>/dev/null; then
+            echo "active"
+        else
+            local last_log=$(journalctl -u "$service_name" -n 5 --no-pager 2>/dev/null | grep -i "connected\|established")
+            if [[ -n "$last_log" ]]; then
+                echo "connected"
+            else
+                echo "disconnected"
+            fi
+        fi
+    else
+        echo "traffic"
+    fi
+}
+
+monitor_tunnels() {
+    while true; do
+        local tunnels=($(list_tunnels))
+        
+        for tunnel in "${tunnels[@]}"; do
+            if ! systemctl is-active --quiet "$tunnel"; then
+                systemctl start "$tunnel" >/dev/null 2>&1
+                logger "GOLDIP: Auto-restarted tunnel $tunnel"
+            fi
+        done
+        
+        sleep 30
+    done
+}
+
+start_monitor() {
+    if [[ -f "$MONITOR_PID_FILE" ]] && kill -0 $(cat "$MONITOR_PID_FILE") 2>/dev/null; then
+        return
+    fi
+    
+    monitor_tunnels &
+    echo $! > "$MONITOR_PID_FILE"
+}
+
+stop_monitor() {
+    if [[ -f "$MONITOR_PID_FILE" ]]; then
+        kill $(cat "$MONITOR_PID_FILE") 2>/dev/null
+        rm -f "$MONITOR_PID_FILE"
+    fi
+}
+
 install_backhaul() {
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     print_color "CYAN" "  Installing Backhaul v0.6.5"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     
     if [[ -f "$BACKHAUL_BIN" ]]; then
-        print_color "YELLOW" "⚠ Backhaul is already installed"
+        print_box "BG_YELLOW" "WHITE" "⚠ Backhaul is already installed"
+        echo ""
         print_color "BLUE" "Do you want to reinstall? (yes/no)"
         read -r confirm
         if [[ "$confirm" != "yes" ]]; then
@@ -179,21 +363,34 @@ install_backhaul() {
     
     clear_screen
     print_logo
-    print_color "PINK" "→ Downloading Backhaul..."
-    if ! wget -q --show-progress "$BACKHAUL_URL" -O "$BACKHAUL_ARCHIVE"; then
+    print_color "PINK" "→ Downloading Backhaul from primary source..."
+    
+    if wget -q --show-progress "$BACKHAUL_URL_PRIMARY" -O "$BACKHAUL_ARCHIVE" 2>/dev/null; then
+        print_box "BG_GREEN" "WHITE" "✓ Downloaded from goldip.me"
+    else
         clear_screen
         print_logo
-        print_color "RED" "✗ Download failed"
-        press_enter
-        return
+        print_box "BG_YELLOW" "WHITE" "⚠ Primary source failed, trying backup..."
+        echo ""
+        print_color "CYAN" "→ Downloading from GitHub..."
+        
+        if ! wget -q --show-progress "$BACKHAUL_URL_BACKUP" -O "$BACKHAUL_ARCHIVE" 2>/dev/null; then
+            clear_screen
+            print_logo
+            print_box "BG_RED" "WHITE" "✗ Download failed from both sources"
+            press_enter
+            return
+        fi
+        print_box "BG_GREEN" "WHITE" "✓ Downloaded from GitHub"
     fi
     
+    echo ""
     clear_screen
     print_logo
     print_color "CYAN" "→ Extracting archive..."
     rm -f "$BACKHAUL_BIN"
     if ! tar -xzf "$BACKHAUL_ARCHIVE" -C /tmp/; then
-        print_color "RED" "✗ Extraction failed"
+        print_box "BG_RED" "WHITE" "✗ Extraction failed"
         rm -f "$BACKHAUL_ARCHIVE"
         press_enter
         return
@@ -205,7 +402,10 @@ install_backhaul() {
     
     clear_screen
     print_logo
-    print_color "GREEN" "✓ Backhaul installed successfully"
+    print_box "BG_GREEN" "WHITE" "✓ Backhaul installed successfully"
+    
+    start_monitor
+    
     press_enter
 }
 
@@ -213,12 +413,12 @@ add_tunnel_menu() {
     while true; do
         clear_screen
         print_logo
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         print_color "CYAN" "  Add Tunnel"
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         echo ""
-        print_color "PINK" "[1] Iran (Server)"
-        print_color "CYAN" "[2] Kharej (Client)"
+        print_color "PINK" "[1] Iran Server"
+        print_color "CYAN" "[2] Kharej Client"
         print_color "OLIVE" "[0] Back"
         echo ""
         print_color "YELLOW" "Select option:"
@@ -231,7 +431,7 @@ add_tunnel_menu() {
             *) 
                 clear_screen
                 print_logo
-                print_color "RED" "✗ Invalid option"
+                print_box "BG_RED" "WHITE" "✗ Invalid option"
                 sleep 1
                 ;;
         esac
@@ -241,9 +441,9 @@ add_tunnel_menu() {
 add_tunnel_iran() {
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
-    print_color "CYAN" "  Add Iran Tunnel (Server)"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+    print_color "CYAN" "  Add Iran Tunnel Server"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     echo ""
     
@@ -252,7 +452,7 @@ add_tunnel_iran() {
     
     if [[ -z "$tunnel_name" ]]; then
         echo ""
-        print_color "RED" "✗ Tunnel name is required"
+        print_box "BG_RED" "WHITE" "✗ Tunnel name is required"
         sleep 2
         return
     fi
@@ -261,25 +461,23 @@ add_tunnel_iran() {
     print_color "CYAN" "Select Protocol:"
     echo ""
     print_color "PINK" "[1] TCP"
-    print_color "CYAN" "[2] TCPMUX"
+    print_color "BLUE" "[2] UDP"
     print_color "YELLOW" "[3] WS"
-    print_color "ORANGE" "[4] WSS"
-    print_color "BLUE" "[5] GRPC"
-    print_color "OLIVE" "[6] UDP"
+    print_color "PURPLE" "[4] WSS"
+    print_color "OLIVE" "[5] GRPC"
     echo ""
-    print_color "PINK" "Select protocol (1-6):"
+    print_color "PINK" "Select protocol (1-5):"
     read -r proto_choice
     
     case $proto_choice in
         1) protocol="tcp" ;;
-        2) protocol="tcpmux" ;;
+        2) protocol="udp" ;;
         3) protocol="ws" ;;
         4) protocol="wss" ;;
         5) protocol="grpc" ;;
-        6) protocol="udp" ;;
         *)
             echo ""
-            print_color "RED" "✗ Invalid protocol selection"
+            print_box "BG_RED" "WHITE" "✗ Invalid protocol selection"
             sleep 2
             return
             ;;
@@ -292,14 +490,14 @@ add_tunnel_iran() {
         
         if ! validate_port "$tunnel_port"; then
             echo ""
-            print_color "RED" "✗ Invalid port"
+            print_box "BG_RED" "WHITE" "✗ Invalid port"
             sleep 1
             continue
         fi
         
         if check_port_in_use "$tunnel_port"; then
             echo ""
-            print_color "RED" "✗ Port $tunnel_port is already in use"
+            print_box "BG_RED" "WHITE" "✗ Port $tunnel_port is already in use"
             sleep 1
             continue
         fi
@@ -307,13 +505,13 @@ add_tunnel_iran() {
     done
     
     echo ""
-    print_color "ORANGE" "Token (leave empty for auto-generate):"
+    print_color "NEWORANGE" "Token (leave empty for auto-generate):"
     read -r token
     
     if [[ -z "$token" ]]; then
         token=$(generate_token)
         echo ""
-        print_color "GREEN" "✓ Generated token: $token"
+        print_box "BG_GREEN" "WHITE" "✓ Generated token: $token"
         sleep 2
     fi
     
@@ -322,86 +520,145 @@ add_tunnel_iran() {
     read -r vpn_ports_input
     
     IFS=',' read -ra vpn_ports_array <<< "$vpn_ports_input"
-    local ports_string=""
+    local ports_lines=""
     for port in "${vpn_ports_array[@]}"; do
         port=$(echo "$port" | xargs)
         if validate_port "$port"; then
-            if [[ -n "$ports_string" ]]; then
-                ports_string="$ports_string, \"$port\""
-            else
-                ports_string="\"$port\""
-            fi
+            ports_lines+="\"$port\",
+"
         fi
     done
+    ports_lines=$(echo -e "$ports_lines" | sed '$s/,$//')
     
-    if [[ -z "$ports_string" ]]; then
+    if [[ -z "$ports_lines" ]]; then
         echo ""
-        print_color "RED" "✗ No valid ports provided"
+        print_box "BG_RED" "WHITE" "✗ No valid ports provided"
         sleep 2
         return
     fi
     
+    local conflict_check=$(check_vpn_port_conflict "$vpn_ports_input" "")
+    if [[ $? -eq 1 ]]; then
+        local conflict_type=$(echo "$conflict_check" | cut -d':' -f1)
+        local conflict_port=$(echo "$conflict_check" | cut -d':' -f2)
+        local conflict_info=$(echo "$conflict_check" | cut -d':' -f3)
+        
+        echo ""
+        print_box "BG_RED" "WHITE" "✗ Port $conflict_port is already in use!"
+        echo ""
+        
+        if [[ "$conflict_type" == "goldip" ]]; then
+            local conflict_tunnel_info=$(get_tunnel_info "$conflict_info")
+            local conflict_tunnel_name=$(echo "$conflict_tunnel_info" | jq -r '.name // "Unknown"' 2>/dev/null)
+            
+            print_color "YELLOW" "  Used by GOLDIP tunnel:"
+            print_color "CYAN" "  → Tunnel Name: $conflict_tunnel_name"
+            print_color "CYAN" "  → Service: $conflict_info"
+        else
+            print_color "YELLOW" "  Used by system service:"
+            print_color "CYAN" "  → Process/Service: $conflict_info"
+        fi
+        
+        echo ""
+        print_color "NEWORANGE" "Please choose different VPN port(s)"
+        sleep 4
+        return
+    fi
+    
     local web_port=$(get_next_web_port)
-    local config_name="backhaul-iran-${tunnel_port}"
+    local config_name="backhaul-iran-${tunnel_port}-${protocol}"
     local config_file="/root/${config_name}.toml"
     
-    cat > "$config_file" << EOF
+    if [[ "$protocol" == "tcp" ]] || [[ "$protocol" == "udp" ]]; then
+        cat > "$config_file" << EOF
 [server]
-bind_addr = "0.0.0.0:${tunnel_port}"
-transport = "${protocol}"
-token = "${token}"
-heartbeat = 20
-channel_size = 8192
+bind_addr = "0.0.0.0:$tunnel_port"
+transport = "$protocol"
+token = "$token"
+heartbeat = 40
+channel_size = 2048
 sniffer = true
-web_port = ${web_port}
-sniffer_log = "${SNIFFER_LOG}"
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
 log_level = "info"
-ports = [${ports_string}]
-mux_session = 16
-nodelay = true
-keepalive = 75
-timeout = 180
-retries = 5
+ports = [
+$ports_lines
+]
 EOF
-    
-    if [[ "$protocol" == "ws" || "$protocol" == "wss" ]]; then
-        echo 'ws_path = "/tunnel"' >> "$config_file"
+    elif [[ "$protocol" == "ws" ]]; then
+        cat > "$config_file" << EOF
+[server]
+bind_addr = "0.0.0.0:$tunnel_port"
+transport = "ws"
+token = "$token"
+heartbeat = 40
+channel_size = 2048
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
+ports = [
+$ports_lines
+]
+
+[server.transport_config]
+path = "/"
+EOF
+    elif [[ "$protocol" == "wss" ]]; then
+        cat > "$config_file" << EOF
+[server]
+bind_addr = "0.0.0.0:$tunnel_port"
+transport = "wss"
+token = "$token"
+heartbeat = 40
+channel_size = 2048
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
+ports = [
+$ports_lines
+]
+
+[server.transport_config]
+path = "/"
+sni = "speedtest.net"
+EOF
+    elif [[ "$protocol" == "grpc" ]]; then
+        cat > "$config_file" << EOF
+[server]
+bind_addr = "0.0.0.0:$tunnel_port"
+transport = "grpc"
+token = "$token"
+heartbeat = 40
+channel_size = 2048
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
+ports = [
+$ports_lines
+]
+EOF
     fi
     
-    if [[ "$protocol" == "wss" ]]; then
-        echo 'tls_cert = ""' >> "$config_file"
-        echo 'tls_key = ""' >> "$config_file"
-    fi
+    chmod 755 "$config_file"
     
     cat > "/etc/systemd/system/${config_name}.service" << EOF
 [Unit]
-Description=Backhaul Tunnel - ${tunnel_name}
+Description=Backhaul Reverse Tunnel Service - ${tunnel_name}
 After=network.target
-StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart=${BACKHAUL_BIN} -c ${config_file}
+ExecStart=$BACKHAUL_BIN -c $config_file
 Restart=always
-RestartSec=5
+RestartSec=3
 LimitNOFILE=1048576
-LimitNPROC=512
-LimitCORE=infinity
-TasksMax=infinity
-Nice=-10
 
 [Install]
 WantedBy=multi-user.target
 EOF
-    
-    sysctl -w net.core.rmem_max=134217728 >/dev/null 2>&1
-    sysctl -w net.core.wmem_max=134217728 >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_rmem="4096 87380 67108864" >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_wmem="4096 65536 67108864" >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_congestion_control=bbr >/dev/null 2>&1
-    sysctl -w net.core.default_qdisc=fq >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_mtu_probing=1 >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_fastopen=3 >/dev/null 2>&1
     
     systemctl daemon-reload
     systemctl enable "${config_name}.service" >/dev/null 2>&1
@@ -409,17 +666,23 @@ EOF
     
     save_tunnel_info "$tunnel_name" "$config_name" "$tunnel_port" "0.0.0.0" "$protocol"
     
+    sleep 2
+    
     clear_screen
     print_logo
     
     if systemctl is-active --quiet "${config_name}.service"; then
-        print_color "GREEN" "✓ Tunnel created and started successfully"
+        print_box "BG_GREEN" "WHITE" "✓ Tunnel created and started successfully"
+        echo ""
         print_color "CYAN" "  Name: ${tunnel_name}"
         print_color "BLUE" "  Protocol: ${protocol}"
         print_color "YELLOW" "  Service: ${config_name}"
         print_color "OLIVE" "  Web Port: ${web_port}"
     else
-        print_color "RED" "✗ Failed to start tunnel"
+        print_box "BG_RED" "WHITE" "✗ Failed to start tunnel"
+        echo ""
+        print_color "YELLOW" "Checking logs..."
+        journalctl -u "${config_name}.service" -n 10 --no-pager
     fi
     
     press_enter
@@ -428,9 +691,9 @@ EOF
 add_tunnel_kharej() {
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
-    print_color "CYAN" "  Add Kharej Tunnel (Client)"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+    print_color "CYAN" "  Add Kharej Tunnel Client"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     echo ""
     
@@ -439,7 +702,7 @@ add_tunnel_kharej() {
     
     if [[ -z "$tunnel_name" ]]; then
         echo ""
-        print_color "RED" "✗ Tunnel name is required"
+        print_box "BG_RED" "WHITE" "✗ Tunnel name is required"
         sleep 2
         return
     fi
@@ -448,25 +711,23 @@ add_tunnel_kharej() {
     print_color "CYAN" "Select Protocol:"
     echo ""
     print_color "PINK" "[1] TCP"
-    print_color "CYAN" "[2] TCPMUX"
+    print_color "BLUE" "[2] UDP"
     print_color "YELLOW" "[3] WS"
-    print_color "ORANGE" "[4] WSS"
-    print_color "BLUE" "[5] GRPC"
-    print_color "OLIVE" "[6] UDP"
+    print_color "PURPLE" "[4] WSS"
+    print_color "OLIVE" "[5] GRPC"
     echo ""
-    print_color "PINK" "Select protocol (1-6):"
+    print_color "PINK" "Select protocol (1-5):"
     read -r proto_choice
     
     case $proto_choice in
         1) protocol="tcp" ;;
-        2) protocol="tcpmux" ;;
+        2) protocol="udp" ;;
         3) protocol="ws" ;;
         4) protocol="wss" ;;
         5) protocol="grpc" ;;
-        6) protocol="udp" ;;
         *)
             echo ""
-            print_color "RED" "✗ Invalid protocol selection"
+            print_box "BG_RED" "WHITE" "✗ Invalid protocol selection"
             sleep 2
             return
             ;;
@@ -478,18 +739,18 @@ add_tunnel_kharej() {
     
     if ! validate_ip "$iran_ip"; then
         echo ""
-        print_color "RED" "✗ Invalid IP address"
+        print_box "BG_RED" "WHITE" "✗ Invalid IP address"
         sleep 2
         return
     fi
     
     echo ""
-    print_color "ORANGE" "Tunnel Port:"
+    print_color "NEWORANGE" "Tunnel Port:"
     read -r tunnel_port
     
     if ! validate_port "$tunnel_port"; then
         echo ""
-        print_color "RED" "✗ Invalid port"
+        print_box "BG_RED" "WHITE" "✗ Invalid port"
         sleep 2
         return
     fi
@@ -500,81 +761,111 @@ add_tunnel_kharej() {
     
     if [[ -z "$token" ]]; then
         echo ""
-        print_color "RED" "✗ Token is required"
+        print_box "BG_RED" "WHITE" "✗ Token is required"
         sleep 2
         return
     fi
     
-    local remote_addr
-    if [[ "$iran_ip" =~ : ]]; then
-        remote_addr="[${iran_ip}]:${tunnel_port}"
-    else
-        remote_addr="${iran_ip}:${tunnel_port}"
-    fi
-    
+    local remote_addr="${iran_ip}:${tunnel_port}"
     local web_port=$(get_next_web_port)
-    local config_name="backhaul-kharej-${tunnel_port}"
+    local config_name="backhaul-kharej-${tunnel_port}-${protocol}"
     local config_file="/root/${config_name}.toml"
     
-    cat > "$config_file" << EOF
+    if [[ "$protocol" == "tcp" ]] || [[ "$protocol" == "udp" ]]; then
+        cat > "$config_file" << EOF
 [client]
-remote_addr = "${remote_addr}"
-transport = "${protocol}"
-token = "${token}"
-connection_pool = 32
-aggressive_pool = true
-keepalive_period = 15
+remote_addr = "$remote_addr"
+transport = "$protocol"
+token = "$token"
+connection_pool = 8
+aggressive_pool = false
+keepalive_period = 75
 dial_timeout = 10
-retry_interval = 2
-sniffer = true
-web_port = ${web_port}
-sniffer_log = "${SNIFFER_LOG}"
-log_level = "info"
-mux_session = 16
 nodelay = true
-channel_size = 8192
-fastopen = true
+retry_interval = 3
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
 EOF
-    
-    if [[ "$protocol" == "ws" || "$protocol" == "wss" ]]; then
-        echo 'ws_path = "/tunnel"' >> "$config_file"
+    elif [[ "$protocol" == "ws" ]]; then
+        cat > "$config_file" << EOF
+[client]
+remote_addr = "$remote_addr"
+transport = "ws"
+token = "$token"
+connection_pool = 8
+aggressive_pool = false
+keepalive_period = 75
+dial_timeout = 10
+nodelay = true
+retry_interval = 3
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
+
+[client.transport_config]
+path = "/"
+EOF
+    elif [[ "$protocol" == "wss" ]]; then
+        cat > "$config_file" << EOF
+[client]
+remote_addr = "$remote_addr"
+transport = "wss"
+token = "$token"
+connection_pool = 8
+aggressive_pool = false
+keepalive_period = 75
+dial_timeout = 10
+nodelay = true
+retry_interval = 3
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
+
+[client.transport_config]
+path = "/"
+sni = "speedtest.net"
+insecure_skip_verify = true
+EOF
+    elif [[ "$protocol" == "grpc" ]]; then
+        cat > "$config_file" << EOF
+[client]
+remote_addr = "$remote_addr"
+transport = "grpc"
+token = "$token"
+connection_pool = 8
+aggressive_pool = false
+keepalive_period = 75
+dial_timeout = 10
+nodelay = true
+retry_interval = 3
+sniffer = true
+web_port = $web_port
+sniffer_log = "$SNIFFER_LOG"
+log_level = "info"
+EOF
     fi
     
-    if [[ "$protocol" == "wss" ]]; then
-        echo 'tls_verify = false' >> "$config_file"
-    fi
+    chmod 755 "$config_file"
     
     cat > "/etc/systemd/system/${config_name}.service" << EOF
 [Unit]
-Description=Backhaul Tunnel - ${tunnel_name}
+Description=Backhaul Client Service - ${tunnel_name}
 After=network.target
-StartLimitIntervalSec=0
 
 [Service]
 Type=simple
-ExecStart=${BACKHAUL_BIN} -c ${config_file}
+ExecStart=$BACKHAUL_BIN -c $config_file
 Restart=always
-RestartSec=5
+RestartSec=3
 LimitNOFILE=1048576
-LimitNPROC=512
-LimitCORE=infinity
-TasksMax=infinity
-Nice=-10
 
 [Install]
 WantedBy=multi-user.target
 EOF
-    
-    sysctl -w net.core.rmem_max=134217728 >/dev/null 2>&1
-    sysctl -w net.core.wmem_max=134217728 >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_rmem="4096 87380 67108864" >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_wmem="4096 65536 67108864" >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_congestion_control=bbr >/dev/null 2>&1
-    sysctl -w net.core.default_qdisc=fq >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_mtu_probing=1 >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_fastopen=3 >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_slow_start_after_idle=0 >/dev/null 2>&1
-    sysctl -w net.ipv4.tcp_no_metrics_save=1 >/dev/null 2>&1
     
     systemctl daemon-reload
     systemctl enable "${config_name}.service" >/dev/null 2>&1
@@ -582,17 +873,23 @@ EOF
     
     save_tunnel_info "$tunnel_name" "$config_name" "$tunnel_port" "$iran_ip" "$protocol"
     
+    sleep 2
+    
     clear_screen
     print_logo
     
     if systemctl is-active --quiet "${config_name}.service"; then
-        print_color "GREEN" "✓ Tunnel created and started successfully"
+        print_box "BG_GREEN" "WHITE" "✓ Tunnel created and started successfully"
+        echo ""
         print_color "CYAN" "  Name: ${tunnel_name}"
         print_color "BLUE" "  Protocol: ${protocol}"
         print_color "YELLOW" "  Service: ${config_name}"
         print_color "OLIVE" "  Web Port: ${web_port}"
     else
-        print_color "RED" "✗ Failed to start tunnel"
+        print_box "BG_RED" "WHITE" "✗ Failed to start tunnel"
+        echo ""
+        print_color "YELLOW" "Checking logs..."
+        journalctl -u "${config_name}.service" -n 10 --no-pager
     fi
     
     press_enter
@@ -602,14 +899,14 @@ manage_tunnel_menu() {
     while true; do
         clear_screen
         print_logo
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         print_color "CYAN" "  Manage Tunnel"
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         echo ""
         
         local tunnels=($(list_tunnels))
         if [[ ${#tunnels[@]} -eq 0 ]]; then
-            print_color "RED" "✗ No tunnels found"
+            print_box "BG_RED" "WHITE" "✗ No tunnels found"
             press_enter
             return
         fi
@@ -626,9 +923,14 @@ manage_tunnel_menu() {
             fi
             
             if systemctl is-active --quiet "$tunnel"; then
-                print_color "GREEN" "[$i] $name | Port: $port | Dest: $dest (Active)"
+                local status=$(check_tunnel_connection "$tunnel")
+                if [[ "$status" == "traffic" ]]; then
+                    print_box "BG_GREEN" "WHITE" "[$i] $name | Port: $port | Dest: $dest (Active + Traffic)"
+                else
+                    print_color "GREEN" "[$i] $name | Port: $port | Dest: $dest (Active)"
+                fi
             else
-                print_color "RED" "[$i] $name | Port: $port | Dest: $dest (Inactive)"
+                print_box "BG_RED" "WHITE" "[$i] $name | Port: $port | Dest: $dest (Inactive)"
             fi
             ((i++))
         done
@@ -648,7 +950,7 @@ manage_tunnel_menu() {
         else
             clear_screen
             print_logo
-            print_color "RED" "✗ Invalid selection"
+            print_box "BG_RED" "WHITE" "✗ Invalid selection"
             sleep 1
         fi
     done
@@ -660,14 +962,14 @@ manage_tunnel_actions() {
     while true; do
         clear_screen
         print_logo
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         print_color "CYAN" "  Manage: $tunnel"
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         echo ""
         print_color "PINK" "[1] Start"
         print_color "CYAN" "[2] Stop"
         print_color "YELLOW" "[3] Restart"
-        print_color "ORANGE" "[4] Edit"
+        print_color "NEWORANGE" "[4] Edit Basic Settings"
         print_color "BLUE" "[5] Delete"
         print_color "OLIVE" "[0] Back"
         echo ""
@@ -680,9 +982,9 @@ manage_tunnel_actions() {
                 clear_screen
                 print_logo
                 if systemctl is-active --quiet "$tunnel"; then
-                    print_color "GREEN" "✓ Tunnel started"
+                    print_box "BG_GREEN" "WHITE" "✓ Tunnel started"
                 else
-                    print_color "RED" "✗ Failed to start"
+                    print_box "BG_RED" "WHITE" "✗ Failed to start"
                 fi
                 sleep 2
                 ;;
@@ -690,7 +992,7 @@ manage_tunnel_actions() {
                 systemctl stop "$tunnel"
                 clear_screen
                 print_logo
-                print_color "GREEN" "✓ Tunnel stopped"
+                print_box "BG_GREEN" "WHITE" "✓ Tunnel stopped"
                 sleep 2
                 ;;
             3)
@@ -698,14 +1000,14 @@ manage_tunnel_actions() {
                 clear_screen
                 print_logo
                 if systemctl is-active --quiet "$tunnel"; then
-                    print_color "GREEN" "✓ Tunnel restarted"
+                    print_box "BG_GREEN" "WHITE" "✓ Tunnel restarted"
                 else
-                    print_color "RED" "✗ Failed to restart"
+                    print_box "BG_RED" "WHITE" "✗ Failed to restart"
                 fi
                 sleep 2
                 ;;
             4)
-                edit_tunnel "$tunnel"
+                edit_tunnel_basic "$tunnel"
                 ;;
             5)
                 delete_tunnel "$tunnel"
@@ -717,39 +1019,39 @@ manage_tunnel_actions() {
             *)
                 clear_screen
                 print_logo
-                print_color "RED" "✗ Invalid action"
+                print_box "BG_RED" "WHITE" "✗ Invalid action"
                 sleep 1
                 ;;
         esac
     done
 }
 
-edit_tunnel() {
+edit_tunnel_basic() {
     local tunnel="$1"
     local config_file="/root/${tunnel}.toml"
     
     if [[ ! -f "$config_file" ]]; then
         clear_screen
         print_logo
-        print_color "RED" "✗ Config file not found"
+        print_box "BG_RED" "WHITE" "✗ Config file not found"
         press_enter
         return
     fi
     
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
-    print_color "CYAN" "  Edit: $tunnel"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+    print_color "CYAN" "  Edit Basic Settings: $tunnel"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     
-    if [[ "$tunnel" == *"iran"* ]]; then
+    if grep -q "\[server\]" "$config_file"; then
         print_color "PINK" "[1] Token"
         print_color "CYAN" "[2] VPN Config Ports"
         print_color "YELLOW" "[3] Web Port"
         print_color "OLIVE" "[0] Cancel"
         echo ""
-        print_color "ORANGE" "What to edit:"
+        print_color "NEWORANGE" "What to edit:"
         read -r edit_choice
         
         case $edit_choice in
@@ -761,7 +1063,7 @@ edit_tunnel() {
                     sed -i "s/^token = .*/token = \"${new_token}\"/" "$config_file"
                     systemctl restart "$tunnel"
                     echo ""
-                    print_color "GREEN" "✓ Token updated"
+                    print_box "BG_GREEN" "WHITE" "✓ Token updated"
                     sleep 2
                 fi
                 ;;
@@ -769,24 +1071,48 @@ edit_tunnel() {
                 echo ""
                 print_color "CYAN" "New VPN Config Ports (comma separated):"
                 read -r new_ports
-                IFS=',' read -ra ports_array <<< "$new_ports"
-                local ports_string=""
-                for port in "${ports_array[@]}"; do
-                    port=$(echo "$port" | xargs)
-                    if validate_port "$port"; then
-                        if [[ -n "$ports_string" ]]; then
-                            ports_string="$ports_string, \"$port\""
-                        else
-                            ports_string="\"$port\""
-                        fi
-                    fi
-                done
-                if [[ -n "$ports_string" ]]; then
-                    sed -i "s/^ports = .*/ports = [${ports_string}]/" "$config_file"
-                    systemctl restart "$tunnel"
+                
+                local conflict_check=$(check_vpn_port_conflict "$new_ports" "$tunnel")
+                if [[ $? -eq 1 ]]; then
+                    local conflict_type=$(echo "$conflict_check" | cut -d':' -f1)
+                    local conflict_port=$(echo "$conflict_check" | cut -d':' -f2)
+                    local conflict_info=$(echo "$conflict_check" | cut -d':' -f3)
+                    
                     echo ""
-                    print_color "GREEN" "✓ Ports updated"
-                    sleep 2
+                    print_box "BG_RED" "WHITE" "✗ Port $conflict_port is already in use!"
+                    echo ""
+                    
+                    if [[ "$conflict_type" == "goldip" ]]; then
+                        local conflict_tunnel_info=$(get_tunnel_info "$conflict_info")
+                        local conflict_tunnel_name=$(echo "$conflict_tunnel_info" | jq -r '.name // "Unknown"' 2>/dev/null)
+                        
+                        print_color "YELLOW" "  Used by GOLDIP tunnel:"
+                        print_color "CYAN" "  → Tunnel: $conflict_tunnel_name"
+                    else
+                        print_color "YELLOW" "  Used by system service:"
+                        print_color "CYAN" "  → Process: $conflict_info"
+                    fi
+                    
+                    sleep 3
+                else
+                    IFS=',' read -ra ports_array <<< "$new_ports"
+                    local ports_lines=""
+                    for port in "${ports_array[@]}"; do
+                        port=$(echo "$port" | xargs)
+                        if validate_port "$port"; then
+                            ports_lines+="\"$port\",
+"
+                        fi
+                    done
+                    ports_lines=$(echo -e "$ports_lines" | sed '$s/,$//')
+                    
+                    if [[ -n "$ports_lines" ]]; then
+                        sed -i "/^ports = \[/,/^\]/c\ports = [\n${ports_lines}\n]" "$config_file"
+                        systemctl restart "$tunnel"
+                        echo ""
+                        print_box "BG_GREEN" "WHITE" "✓ Ports updated"
+                        sleep 2
+                    fi
                 fi
                 ;;
             3)
@@ -797,7 +1123,7 @@ edit_tunnel() {
                     sed -i "s/^web_port = .*/web_port = ${new_web_port}/" "$config_file"
                     systemctl restart "$tunnel"
                     echo ""
-                    print_color "GREEN" "✓ Web port updated"
+                    print_box "BG_GREEN" "WHITE" "✓ Web port updated"
                     sleep 2
                 fi
                 ;;
@@ -808,7 +1134,7 @@ edit_tunnel() {
         print_color "YELLOW" "[3] Web Port"
         print_color "OLIVE" "[0] Cancel"
         echo ""
-        print_color "ORANGE" "What to edit:"
+        print_color "NEWORANGE" "What to edit:"
         read -r edit_choice
         
         case $edit_choice in
@@ -822,12 +1148,7 @@ edit_tunnel() {
                 read -r new_port
                 
                 if validate_ip "$new_ip" && validate_port "$new_port"; then
-                    local new_remote
-                    if [[ "$new_ip" =~ : ]]; then
-                        new_remote="[${new_ip}]:${new_port}"
-                    else
-                        new_remote="${new_ip}:${new_port}"
-                    fi
+                    local new_remote="${new_ip}:${new_port}"
                     sed -i "s|^remote_addr = .*|remote_addr = \"${new_remote}\"|" "$config_file"
                     systemctl restart "$tunnel"
                     
@@ -837,7 +1158,7 @@ edit_tunnel() {
                     save_tunnel_info "$name" "$tunnel" "$new_port" "$new_ip" "$protocol"
                     
                     echo ""
-                    print_color "GREEN" "✓ Remote address updated"
+                    print_box "BG_GREEN" "WHITE" "✓ Remote address updated"
                     sleep 2
                 fi
                 ;;
@@ -849,7 +1170,7 @@ edit_tunnel() {
                     sed -i "s/^token = .*/token = \"${new_token}\"/" "$config_file"
                     systemctl restart "$tunnel"
                     echo ""
-                    print_color "GREEN" "✓ Token updated"
+                    print_box "BG_GREEN" "WHITE" "✓ Token updated"
                     sleep 2
                 fi
                 ;;
@@ -861,7 +1182,7 @@ edit_tunnel() {
                     sed -i "s/^web_port = .*/web_port = ${new_web_port}/" "$config_file"
                     systemctl restart "$tunnel"
                     echo ""
-                    print_color "GREEN" "✓ Web port updated"
+                    print_box "BG_GREEN" "WHITE" "✓ Web port updated"
                     sleep 2
                 fi
                 ;;
@@ -876,7 +1197,8 @@ delete_tunnel() {
     
     clear_screen
     print_logo
-    print_color "RED" "⚠ Are you sure you want to delete $tunnel? (yes/no)"
+    print_box "BG_RED" "WHITE" "⚠ Are you sure you want to delete $tunnel? (yes/no)"
+    echo ""
     read -r confirm
     
     if [[ "$confirm" == "yes" ]]; then
@@ -889,27 +1211,255 @@ delete_tunnel() {
         
         clear_screen
         print_logo
-        print_color "GREEN" "✓ Tunnel deleted successfully"
+        print_box "BG_GREEN" "WHITE" "✓ Tunnel deleted successfully"
     else
         clear_screen
         print_logo
-        print_color "YELLOW" "Deletion cancelled"
+        print_box "BG_YELLOW" "WHITE" "⚠ Deletion cancelled"
     fi
     
     press_enter
 }
 
+advanced_options_menu() {
+    while true; do
+        clear_screen
+        print_logo
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+        print_color "PURPLE" "  ⚡ Advanced Options"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+        echo ""
+        
+        local tunnels=($(list_tunnels))
+        if [[ ${#tunnels[@]} -eq 0 ]]; then
+            print_box "BG_RED" "WHITE" "✗ No tunnels found"
+            press_enter
+            return
+        fi
+        
+        local i=1
+        for tunnel in "${tunnels[@]}"; do
+            local info=$(get_tunnel_info "$tunnel")
+            local name=$(echo "$info" | jq -r '.name // "Unknown"' 2>/dev/null)
+            
+            if [[ -z "$name" || "$name" == "null" ]]; then
+                name="Unknown"
+            fi
+            
+            print_color "PURPLE" "[$i] $name ($tunnel)"
+            ((i++))
+        done
+        
+        print_color "OLIVE" "[0] Back"
+        echo ""
+        print_color "YELLOW" "Select tunnel to configure:"
+        read -r choice
+        
+        if [[ "$choice" == "0" ]]; then
+            return
+        fi
+        
+        if [[ "$choice" =~ ^[0-9]+$ ]] && [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#tunnels[@]} ]]; then
+            local selected_tunnel="${tunnels[$((choice-1))]}"
+            advanced_tunnel_settings "$selected_tunnel"
+        else
+            clear_screen
+            print_logo
+            print_box "BG_RED" "WHITE" "✗ Invalid selection"
+            sleep 1
+        fi
+    done
+}
+
+advanced_tunnel_settings() {
+    local tunnel="$1"
+    local config_file="/root/${tunnel}.toml"
+    
+    if [[ ! -f "$config_file" ]]; then
+        clear_screen
+        print_logo
+        print_box "BG_RED" "WHITE" "✗ Config file not found"
+        press_enter
+        return
+    fi
+    
+    while true; do
+        clear_screen
+        print_logo
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+        print_color "PURPLE" "  ⚡ Advanced Settings: $tunnel"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+        echo ""
+        
+        if grep -q "\[server\]" "$config_file"; then
+            local heartbeat=$(grep "^heartbeat" "$config_file" 2>/dev/null | awk '{print $3}')
+            local channel=$(grep "^channel_size" "$config_file" 2>/dev/null | awk '{print $3}')
+            local loglevel=$(grep "^log_level" "$config_file" 2>/dev/null | cut -d'"' -f2)
+            local sniff=$(grep "^sniffer" "$config_file" 2>/dev/null | awk '{print $3}')
+            
+            print_color "PINK" "[1] Heartbeat (Current: ${heartbeat:-40})"
+            print_color "CYAN" "[2] Channel Size (Current: ${channel:-2048})"
+            print_color "YELLOW" "[3] Log Level (Current: ${loglevel:-info})"
+            print_color "NEWORANGE" "[4] Sniffer (Current: ${sniff:-true})"
+        else
+            local pool=$(grep "^connection_pool" "$config_file" 2>/dev/null | awk '{print $3}')
+            local aggr=$(grep "^aggressive_pool" "$config_file" 2>/dev/null | awk '{print $3}')
+            local keep=$(grep "^keepalive_period" "$config_file" 2>/dev/null | awk '{print $3}')
+            local dial=$(grep "^dial_timeout" "$config_file" 2>/dev/null | awk '{print $3}')
+            local retry=$(grep "^retry_interval" "$config_file" 2>/dev/null | awk '{print $3}')
+            local node=$(grep "^nodelay" "$config_file" 2>/dev/null | awk '{print $3}')
+            local loglevel=$(grep "^log_level" "$config_file" 2>/dev/null | cut -d'"' -f2)
+            
+            print_color "PINK" "[1] Connection Pool (Current: ${pool:-8})"
+            print_color "CYAN" "[2] Aggressive Pool (Current: ${aggr:-false})"
+            print_color "YELLOW" "[3] Keepalive Period (Current: ${keep:-75})"
+            print_color "NEWORANGE" "[4] Dial Timeout (Current: ${dial:-10})"
+            print_color "BLUE" "[5] Retry Interval (Current: ${retry:-3})"
+            print_color "OLIVE" "[6] Nodelay (Current: ${node:-true})"
+            print_color "PURPLE" "[7] Log Level (Current: ${loglevel:-info})"
+        fi
+        
+        print_color "RED" "[0] Back"
+        echo ""
+        print_color "PURPLE" "Select parameter to change:"
+        read -r param_choice
+        
+        if [[ "$param_choice" == "0" ]]; then
+            return
+        fi
+        
+        if grep -q "\[server\]" "$config_file"; then
+            case $param_choice in
+                1)
+                    echo ""
+                    print_color "PINK" "New Heartbeat value (seconds, default: 40):"
+                    read -r new_value
+                    if [[ "$new_value" =~ ^[0-9]+$ ]]; then
+                        sed -i "s/^heartbeat = .*/heartbeat = ${new_value}/" "$config_file"
+                        systemctl restart "$tunnel"
+                        print_box "BG_GREEN" "WHITE" "✓ Heartbeat updated"
+                        sleep 2
+                    fi
+                    ;;
+                2)
+                    echo ""
+                    print_color "CYAN" "New Channel Size (default: 2048):"
+                    read -r new_value
+                    if [[ "$new_value" =~ ^[0-9]+$ ]]; then
+                        sed -i "s/^channel_size = .*/channel_size = ${new_value}/" "$config_file"
+                        systemctl restart "$tunnel"
+                        print_box "BG_GREEN" "WHITE" "✓ Channel Size updated"
+                        sleep 2
+                    fi
+                    ;;
+                3)
+                    echo ""
+                    print_color "YELLOW" "Log Level (trace/debug/info/warn/error):"
+                    read -r new_value
+                    sed -i "s/^log_level = .*/log_level = \"${new_value}\"/" "$config_file"
+                    systemctl restart "$tunnel"
+                    print_box "BG_GREEN" "WHITE" "✓ Log Level updated"
+                    sleep 2
+                    ;;
+                4)
+                    echo ""
+                    print_color "NEWORANGE" "Enable Sniffer? (true/false):"
+                    read -r new_value
+                    sed -i "s/^sniffer = .*/sniffer = ${new_value}/" "$config_file"
+                    systemctl restart "$tunnel"
+                    print_box "BG_GREEN" "WHITE" "✓ Sniffer updated"
+                    sleep 2
+                    ;;
+            esac
+        else
+            case $param_choice in
+                1)
+                    echo ""
+                    print_color "PINK" "New Connection Pool (default: 8):"
+                    read -r new_value
+                    if [[ "$new_value" =~ ^[0-9]+$ ]]; then
+                        sed -i "s/^connection_pool = .*/connection_pool = ${new_value}/" "$config_file"
+                        systemctl restart "$tunnel"
+                        print_box "BG_GREEN" "WHITE" "✓ Connection Pool updated"
+                        sleep 2
+                    fi
+                    ;;
+                2)
+                    echo ""
+                    print_color "CYAN" "Aggressive Pool (true/false, default: false):"
+                    read -r new_value
+                    sed -i "s/^aggressive_pool = .*/aggressive_pool = ${new_value}/" "$config_file"
+                    systemctl restart "$tunnel"
+                    print_box "BG_GREEN" "WHITE" "✓ Aggressive Pool updated"
+                    sleep 2
+                    ;;
+                3)
+                    echo ""
+                    print_color "YELLOW" "New Keepalive Period (seconds, default: 75):"
+                    read -r new_value
+                    if [[ "$new_value" =~ ^[0-9]+$ ]]; then
+                        sed -i "s/^keepalive_period = .*/keepalive_period = ${new_value}/" "$config_file"
+                        systemctl restart "$tunnel"
+                        print_box "BG_GREEN" "WHITE" "✓ Keepalive Period updated"
+                        sleep 2
+                    fi
+                    ;;
+                4)
+                    echo ""
+                    print_color "NEWORANGE" "New Dial Timeout (seconds, default: 10):"
+                    read -r new_value
+                    if [[ "$new_value" =~ ^[0-9]+$ ]]; then
+                        sed -i "s/^dial_timeout = .*/dial_timeout = ${new_value}/" "$config_file"
+                        systemctl restart "$tunnel"
+                        print_box "BG_GREEN" "WHITE" "✓ Dial Timeout updated"
+                        sleep 2
+                    fi
+                    ;;
+                5)
+                    echo ""
+                    print_color "BLUE" "New Retry Interval (seconds, default: 3):"
+                    read -r new_value
+                    if [[ "$new_value" =~ ^[0-9]+$ ]]; then
+                        sed -i "s/^retry_interval = .*/retry_interval = ${new_value}/" "$config_file"
+                        systemctl restart "$tunnel"
+                        print_box "BG_GREEN" "WHITE" "✓ Retry Interval updated"
+                        sleep 2
+                    fi
+                    ;;
+                6)
+                    echo ""
+                    print_color "OLIVE" "Nodelay (true/false, default: true):"
+                    read -r new_value
+                    sed -i "s/^nodelay = .*/nodelay = ${new_value}/" "$config_file"
+                    systemctl restart "$tunnel"
+                    print_box "BG_GREEN" "WHITE" "✓ Nodelay updated"
+                    sleep 2
+                    ;;
+                7)
+                    echo ""
+                    print_color "PURPLE" "Log Level (trace/debug/info/warn/error):"
+                    read -r new_value
+                    sed -i "s/^log_level = .*/log_level = \"${new_value}\"/" "$config_file"
+                    systemctl restart "$tunnel"
+                    print_box "BG_GREEN" "WHITE" "✓ Log Level updated"
+                    sleep 2
+                    ;;
+            esac
+        fi
+    done
+}
+
 show_logs() {
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     print_color "CYAN" "  Tunnel Logs"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     
     local tunnels=($(list_tunnels))
     if [[ ${#tunnels[@]} -eq 0 ]]; then
-        print_color "RED" "✗ No tunnels found"
+        print_box "BG_RED" "WHITE" "✗ No tunnels found"
         press_enter
         return
     fi
@@ -947,16 +1497,26 @@ show_logs() {
         
         local log_output=$(journalctl -u "$selected_tunnel" -n 50 --no-pager 2>/dev/null)
         if [[ -z "$log_output" ]]; then
-            print_color "RED" "✗ No logs available"
+            print_box "BG_RED" "WHITE" "✗ No logs available"
         else
-            echo "$log_output"
+            echo "$log_output" | while IFS= read -r line; do
+                if echo "$line" | grep -qi "error\|fail\|fatal"; then
+                    print_color "RED" "$line"
+                elif echo "$line" | grep -qi "warn\|warning"; then
+                    print_color "YELLOW" "$line"
+                elif echo "$line" | grep -qi "success\|connected\|established\|running"; then
+                    print_color "GREEN" "$line"
+                else
+                    echo "$line"
+                fi
+            done
         fi
         
         press_enter
     else
         clear_screen
         print_logo
-        print_color "RED" "✗ Invalid selection"
+        print_box "BG_RED" "WHITE" "✗ Invalid selection"
         sleep 1
     fi
 }
@@ -964,14 +1524,14 @@ show_logs() {
 show_status() {
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
-    print_color "CYAN" "  Tunnel Status"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
+    print_color "CYAN" "  Tunnel Status & Traffic"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     
     local tunnels=($(list_tunnels))
     if [[ ${#tunnels[@]} -eq 0 ]]; then
-        print_color "RED" "✗ No tunnels found"
+        print_box "BG_RED" "WHITE" "✗ No tunnels found"
     else
         for tunnel in "${tunnels[@]}"; do
             local info=$(get_tunnel_info "$tunnel")
@@ -984,10 +1544,24 @@ show_status() {
             fi
             
             if systemctl is-active --quiet "$tunnel"; then
-                print_color "GREEN" "✓ $name | Port: $port | Dest: $dest"
+                local status=$(check_tunnel_connection "$tunnel")
+                local traffic=$(get_tunnel_traffic "$tunnel")
+                local rx=$(echo "$traffic" | cut -d'|' -f1)
+                local tx=$(echo "$traffic" | cut -d'|' -f2)
+                
+                if [[ "$status" == "traffic" ]]; then
+                    local rx_formatted=$(format_bytes $rx)
+                    local tx_formatted=$(format_bytes $tx)
+                    
+                    print_box "BG_GREEN" "WHITE" "✓ $name | Port: $port | Dest: $dest"
+                    print_box "BG_CYAN" "WHITE" "  ↓ Download: $rx_formatted  ↑ Upload: $tx_formatted"
+                else
+                    print_color "GREEN" "✓ $name | Port: $port | Dest: $dest (Connected)"
+                fi
             else
-                print_color "RED" "✗ $name | Port: $port | Dest: $dest"
+                print_box "BG_RED" "WHITE" "✗ $name | Port: $port | Dest: $dest (Inactive)"
             fi
+            echo ""
         done
     fi
     
@@ -997,22 +1571,25 @@ show_status() {
 uninstall_backhaul() {
     clear_screen
     print_logo
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     print_color "CYAN" "  Uninstall Backhaul"
-    print_color "ORANGE" "═══════════════════════════════════════════════════"
+    print_color "NEWORANGE" "═══════════════════════════════════════════════════"
     echo ""
     
-    print_color "RED" "⚠ This will remove all tunnels and Backhaul installation"
+    print_box "BG_RED" "WHITE" "⚠ This will remove all tunnels and Backhaul installation"
+    echo ""
     print_color "YELLOW" "Are you sure? (yes/no)"
     read -r confirm
     
     if [[ "$confirm" != "yes" ]]; then
         clear_screen
         print_logo
-        print_color "BLUE" "Uninstall cancelled"
+        print_box "BG_BLUE" "WHITE" "Uninstall cancelled"
         press_enter
         return
     fi
+    
+    stop_monitor
     
     clear_screen
     print_logo
@@ -1034,6 +1611,7 @@ uninstall_backhaul() {
     
     rm -f "$BACKHAUL_BIN"
     rm -f /tmp/backhaul
+    rm -f /root/backhaul
     
     clear_screen
     print_logo
@@ -1042,17 +1620,18 @@ uninstall_backhaul() {
     
     rm -f "$SNIFFER_LOG"
     rm -f "$TUNNEL_DB"
+    find /root -type f -name "backhaul-*.toml" -exec rm -f {} \;
     
     clear_screen
     print_logo
-    print_color "ORANGE" "→ Reloading systemd..."
+    print_color "NEWORANGE" "→ Reloading systemd..."
     sleep 1
     
     systemctl daemon-reload
     
     clear_screen
     print_logo
-    print_color "GREEN" "✓ Backhaul uninstalled successfully"
+    print_box "BG_GREEN" "WHITE" "✓ Backhaul uninstalled successfully"
     press_enter
 }
 
@@ -1063,21 +1642,23 @@ main_menu() {
     fi
     
     init_tunnel_db
+    start_monitor
     
     while true; do
         clear_screen
         print_logo
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         print_color "CYAN" "  Main Menu"
-        print_color "ORANGE" "═══════════════════════════════════════════════════"
+        print_color "NEWORANGE" "═══════════════════════════════════════════════════"
         echo ""
         print_color "PINK" "[1] Install Backhaul"
         print_color "CYAN" "[2] Add Tunnel"
         print_color "YELLOW" "[3] Manage Tunnel"
-        print_color "ORANGE" "[4] Logs"
+        print_color "NEWORANGE" "[4] Logs"
         print_color "BLUE" "[5] Tunnel Status"
-        print_color "OLIVE" "[6] Uninstall"
-        print_color "RED" "[7] Exit"
+        print_color "PURPLE" "[6] Advanced Options"
+        print_color "OLIVE" "[7] Uninstall"
+        print_color "RED" "[8] Exit"
         echo ""
         print_color "CYAN" "Select option:"
         read -r choice
@@ -1090,7 +1671,7 @@ main_menu() {
                 if [[ ! -f "$BACKHAUL_BIN" ]]; then
                     clear_screen
                     print_logo
-                    print_color "RED" "✗ Please install Backhaul first"
+                    print_box "BG_RED" "WHITE" "✗ Please install Backhaul first"
                     sleep 2
                 else
                     add_tunnel_menu
@@ -1100,7 +1681,7 @@ main_menu() {
                 if [[ ! -f "$BACKHAUL_BIN" ]]; then
                     clear_screen
                     print_logo
-                    print_color "RED" "✗ Please install Backhaul first"
+                    print_box "BG_RED" "WHITE" "✗ Please install Backhaul first"
                     sleep 2
                 else
                     manage_tunnel_menu
@@ -1110,7 +1691,7 @@ main_menu() {
                 if [[ ! -f "$BACKHAUL_BIN" ]]; then
                     clear_screen
                     print_logo
-                    print_color "RED" "✗ Please install Backhaul first"
+                    print_box "BG_RED" "WHITE" "✗ Please install Backhaul first"
                     sleep 2
                 else
                     show_logs
@@ -1120,16 +1701,27 @@ main_menu() {
                 if [[ ! -f "$BACKHAUL_BIN" ]]; then
                     clear_screen
                     print_logo
-                    print_color "RED" "✗ Please install Backhaul first"
+                    print_box "BG_RED" "WHITE" "✗ Please install Backhaul first"
                     sleep 2
                 else
                     show_status
                 fi
                 ;;
             6)
-                uninstall_backhaul
+                if [[ ! -f "$BACKHAUL_BIN" ]]; then
+                    clear_screen
+                    print_logo
+                    print_box "BG_RED" "WHITE" "✗ Please install Backhaul first"
+                    sleep 2
+                else
+                    advanced_options_menu
+                fi
                 ;;
             7)
+                uninstall_backhaul
+                ;;
+            8)
+                stop_monitor
                 clear_screen
                 print_color "CYAN" "Thank you for using GOLDIP!"
                 print_color "YELLOW" "Goodbye!"
@@ -1139,7 +1731,7 @@ main_menu() {
             *)
                 clear_screen
                 print_logo
-                print_color "RED" "✗ Invalid option"
+                print_box "BG_RED" "WHITE" "✗ Invalid option"
                 sleep 1
                 ;;
         esac
